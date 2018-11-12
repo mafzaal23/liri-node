@@ -1,25 +1,27 @@
 {
-  "name": "liri-node-app",
+  "name": "liri-node",
   "version": "1.0.0",
-  "description": "",
+  "description": "liri node",
   "main": "keys.js",
   "scripts": {
-    "test": "node liri.js"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/FalseFlash/liri-node-app.git"
+    "url": "git+https://github.com/mafzaal23/liri-node.git"
   },
-  "author": "Ray McCann",
+  "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/FalseFlash/liri-node-app/issues"
+    "url": "https://github.com/mafzaal23/liri-node/issues"
   },
-  "homepage": "https://github.com/FalseFlash/liri-node-app#readme",
+  "homepage": "https://github.com/mafzaal23/liri-node#readme",
   "dependencies": {
-    "colors": "^1.1.2",
-    "moment": "^2.17.1",
-    "request": "^2.79.0",
-    "twitter": "^1.7.0"
-  }
+    "dotenv": "^6.1.0",
+    "node-spotify-api": "^1.0.7",
+    "node.js": "0.0.0",
+    "twitter": "^1.7.1"
+  },
+  "devDependencies": {},
+  "keywords": []
 }

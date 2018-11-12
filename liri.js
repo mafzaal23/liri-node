@@ -1,219 +1,239 @@
-"use strict";
+//various required packages and keys
+require("dotenv").config();
+var keys = require("./keys.js");
+var Twitter = require("twitter");
+var Spotify = require("node-spotify-api");
+var request = require("request");
+var fs = require('file-system');
+var spotify = new Spotify(keys.spotify);
+var client = new Twitter(keys.twitter);
 
-const keys = require('./keys');
-const io = require('fs');
-const readline = require('readline');
-const path = require('path');
-const req = require('request');
-const Twitter = require('twitter');
-const colors = require('colors');
-const moment = require('moment');
+//stylistic var
+var demDashes = "---------------------------"
+var fsNewLine = "\n"
 
-const twitterKeys = keys.twitterKeys;
+//input arguments
+var command = process.argv[2];
+var input = process.argv;
 
-const randomTextFile = path.join(__dirname, 'random.txt');
+//taking movie or song title arguments
+var title = "";
+for (var i=3; i<input.length; i++) {
+  if (i>3 && i<input.length) {
+    title = title + "+" + input[i];
+  } else {
+    title = title + input[i];
+  }
+}
 
-const file = readline.createInterface({
-    input: io.createReadStream(randomTextFile),
-    output: process.stdout,
-    terminal: false
-});
+//switch cases for command
+switch(command) {
 
-let command = process.argv[2];
-let commandString = process.argv[3];
-let extraCommands = process.argv[4];
+  case "my-tweets":
+    fs.appendFile('log.txt', demDashes + "\n", (err) => {
+      if (err) throw err;
+    });
+    fs.appendFile('log.txt', "Command: " + command + "\n", (err) => {
+      if (err) throw err;
+    });
+    fs.appendFile('log.txt', demDashes + "\n", (err) => {
+      if (err) throw err;
+    });
+    tweetTweet()
+  break;
 
-let preventWrite = false;
-
-const twitter = new Twitter(twitterKeys);
-
-//----------------------------------------------------------------------
-
-/**
- * Application entry point.
- */
-const main = () => {
-    if (!command) {
-        console.warn('A valid command is needed to run this program.'.red);
-        console.warn('\n1. my-tweets - This will show your last 20 tweets and when they were created at in your terminal/bash window.\n2. spotify-this-song [song name] [optional list count] - This will show song information in your terminal/bash window.\n3. movie-this [movie name] - This will show movie information in your terminal/bash window.\n4. do-what-it-says - This will run commands from random.txt file.'.green);
-        return;
+  case "spotify-this-song":
+    if(title){
+      fs.appendFile('log.txt', demDashes + "\n", (err) => {
+        if (err) throw err;
+      });
+      fs.appendFile('log.txt', "Command: " + command + "\n", (err) => {
+        if (err) throw err;
+      });
+      fs.appendFile('log.txt', "Search Term: " + title + "\n", (err) => {
+        if (err) throw err;
+      });
+      fs.appendFile('log.txt', demDashes + "\n", (err) => {
+        if (err) throw err;
+      });
+      tunesMan(title)
+    } else{
+      fs.appendFile('log.txt', demDashes + "\n", (err) => {
+        if (err) throw err;
+      });
+      fs.appendFile('log.txt', "Command: " + command + "\n", (err) => {
+        if (err) throw err;
+      });
+      fs.appendFile('log.txt', "Search Term: Ace of Base by Default" + "\n", (err) => {
+        if (err) throw err;
+      });
+      fs.appendFile('log.txt', demDashes + "\n", (err) => {
+        if (err) throw err;
+      });
+      tunesMan("The Sign ace of base")
     }
+  break;
 
-    return runCommand(command);
-};
-
-/**
- * Commands to be ran.
- * @param command
- */
-const runCommand = (command) => {
-    switch (command) {
-        case "my-tweets":
-            myTweets();
-            logCommand('my-tweets', '', '');
-        break;
-
-        case "spotify-this-song":
-            searchSpotifySong(commandString, parseInt(extraCommands) ? parseInt(extraCommands) : 1);
-            logCommand('spotify-this-song', `${commandString}`, extraCommands);
-        break;
-
-        case "movie-this":
-            searchMovieAPI(commandString);
-            logCommand('movie-this',  commandString ? commandString : '', '');
-        break;
-
-        case "do-what-it-says":
-            readRandomTextFile();
-        break;
-
-        default:
-            console.warn(`Unable to find the command ${command}`.red);
-        return;
+  case "movie-this":
+    if(title){
+      movieTime(title)
+      fs.appendFile('log.txt', demDashes + "\n", (err) => {
+        if (err) throw err;
+      });
+      fs.appendFile('log.txt', "Command: " + command + "\n", (err) => {
+        if (err) throw err;
+      });
+      fs.appendFile('log.txt', "Search Term: " + title + "\n", (err) => {
+        if (err) throw err;
+      });
+      fs.appendFile('log.txt', demDashes + "\n", (err) => {
+        if (err) throw err;
+      });
+    } else{
+      movieTime("Mr. Nobody")
+      fs.appendFile('log.txt', demDashes + "\n", (err) => {
+        if (err) throw err;
+      });
+      fs.appendFile('log.txt', "Command: " + command + "\n", (err) => {
+        if (err) throw err;
+      });
+      fs.appendFile('log.txt', "Search Term: Mr. Nobody by default" + "\n", (err) => {
+        if (err) throw err;
+      });
+      fs.appendFile('log.txt', demDashes + "\n", (err) => {
+        if (err) throw err;
+      });
     }
-};
+  break;
 
-/**
- * Get tweets from the selected user.
- * @param username
- */
-const myTweets = (username = 'totallypr') => {
-    twitter.get('statuses/user_timeline', {
-        screen_name: username.trim(),
-        count: 20
-    }, function (error, tweets) {
-        if(error)
-            throw error;
+  case "do-what-it-says":
+    doIttt()
+  break;
 
-        let i = 0;
-        tweets.forEach(function() {
-            let time = moment(tweets[i].created_at, 'dd MMM DD HH:mm:ss ZZ YYYY', 'en').format('MM/DD/YYYY hh:mm A');
+  default:
+    console.log("Enter a Command: my-tweets | spotify-this-son | movie-this | do-what-it-says")
+  break;
+}
 
-            console.log(`${time}: ${tweets[i].text}`);
-            i++;
+//display 20 most recent tweets
+function tweetTweet() {
+  var tweetHandle = {screen_name: "FullStackJoe"};
+  client.get("statuses/user_timeline", tweetHandle, function(error, tweets, response){
+    if (!error) {
+      for (var i=0; i<tweets.length; i++) {
+        var date = tweets[i].created_at;
+        console.log("@FullStackJoe: " + tweets[i].text + "  | Created At: " + date.substring(0, 19));
+        console.log(demDashes)
+        fs.appendFile('log.txt', demDashes + "\n", (err) => {
+          if (err) throw err;
         });
-
-        i = 0;
-    });
-};
-
-/**
- * Get information about a song from the Spotify API.
- * @param song
- * @param listLimit
- */
-const searchSpotifySong = (song = 'the sign', listLimit = 1) => {
-        if(!song)
-            throw new Error('Missing song title');
-
-    req(`https://api.spotify.com/v1/search?type=track&q=${song}&limit=20`, function (err, res) {
-        if (err)
-            throw new err;
-
-        const json = JSON.parse(res.body);
-
-        let curListCount = 0;
-
-        json.tracks.items.some(function(data) {
-            let info = data;
-            let artistName = info.artists[0].name;
-            let songName = info.name;
-            let prev_URL = info.preview_url;
-            let album = info.album.name;
-
-            if (songName.toLowerCase() == song.toLowerCase()) {
-                console.log(`Song: ${songName}\nArtist Name: ${artistName}\nAlbum: ${album}\nPreview URL: ${prev_URL}\n`);
-
-                curListCount++;
-                if (curListCount == listLimit)
-                    return true;  // Break out of the loop if we reach the listing limit.
-            }
+        fs.appendFile("log.txt", "@FullStackJoe: " + tweets[i].text + "  | Created At: " + date.substring(0, 19) + "\n", (err) => {
+          if (err) throw err;
         });
-
-        if (curListCount == 0)
-            return console.log(`We could not find the song you were looking for.`.yellow);
-
-    });
-};
-
-/**
- * Searching the movie API for information.
- * @param movie
- */
-const searchMovieAPI = (movie = 'mr nobody') => {
-       /* Title of the movie.
-        Year the movie came out.
-        IMDB Rating of the movie.
-        Country where the movie was produced.
-        Language of the movie.
-        Plot of the movie.
-        Actors in the movie.
-        Rotten Tomatoes Rating.
-        Rotten Tomatoes URL.*/
-
-    req(`http://www.omdbapi.com/?t=${movie}&plot=short&r=json&tomatoes=true`, function (err, res) {
-        const json = JSON.parse(res.body);
-
-        const title = json.Title;
-        const year = json.Year;
-        const imdbRating = json.imdbRating;
-        const plot = json.Plot;
-        const actors = json.Actors;
-        const tomatoRating = json.tomatoRating;
-        const tomatoURL = json.tomatoURL;
-
-        console.log(`Title: ${title}\nYear: ${year}\nIMDB Rating: ${imdbRating}\nPlot: ${plot}\nActors: ${actors}\nTomato Rating: ${tomatoRating}\nTomato URL ${tomatoURL}`);
-    });
-};
-
-/**
- * Read the random.txt file.
- */
-const readRandomTextFile = () => {
-    preventWrite = true;
-
-    file.on('line', function(data) {
-        let split = data.split(',');
-
-        command = split[0];
-        commandString = split[1];
-        extraCommands = split[2];
-
-        runCommand(command);
-    });
-};
-
-/**
- * Log the command to file.
- * @param command
- * @param commandValue
- * @param extraCommands
- * @param callback
- */
-const logCommand = (command, commandValue, extraCommands, callback) => {
-    if (preventWrite === true)
-        return;
-
-    if (command == null || commandValue == null)
-        throw new TypeError('Missing params');
-
-    if (command == 'do-what-it-says')
-        throw new Error('Command will result in a loop');
-
-    if (extraCommands !== '')
-        io.appendFile(randomTextFile, `\n${command},${commandValue},${extraCommands}`, function(err) {
-            if (err)
-                throw err;
+        fs.appendFile('log.txt', demDashes + "\n", (err) => {
+          if (err) throw err;
         });
-    else
-        io.appendFile(randomTextFile, `\n${command},${commandValue}`, function(err) {
-            if (err)
-                throw err;
-        });
+      }
+    } else {
+      console.log("Twitter Error Occurred")
+    }
+  })
+}
 
-    if(callback)
-        callback();
-};
+function tunesMan(title) {
+  spotify.search({ type:"track", query:title}, function(error, data) {
+    if(!error){
+      for(var i = 0; i < data.tracks.items.length; i++)
+      var spotifyPath = data.tracks.items[i];
+      console.log(demDashes)
+      console.log("Artist: " + spotifyPath.artists[0].name)
+      console.log("Song: " + spotifyPath.name)
+      console.log("Preview URL: " + spotifyPath.preview_url)
+      console.log("Album: " + spotifyPath.album.name)
+      console.log(demDashes)
+      fs.appendFile('log.txt', demDashes + "\n", (err) => {
+        if (err) throw err;
+      });
+      fs.appendFile("log.txt", "Artist: " + spotifyPath.artists[0].name + "\n", (err) => {
+        if (err) throw err;
+      });
+      fs.appendFile("log.txt", "Song: " + spotifyPath.name + "\n", (err) => {
+        if (err) throw err;
+      });
+      fs.appendFile("log.txt", "Preview Url: " + spotifyPath.preview_url + "\n", (err) => {
+        if (err) throw err;
+      });
+      fs.appendFile("log.txt", "Album: " + spotifyPath.album.name + "\n", (err) => {
+        if (err) throw err;
+      });
+      fs.appendFile("log.txt", demDashes + "\n", (err) => {
+        if (err) throw err;
+      });
+    } else {
+      console.log("Spotify Error Occurred")
+    }
+  })
+}
 
-// Runs when the program is started.
-main();
+function movieTime(title) {
+  var movieQueryUrl = "http://omdbapi.com/?apikey=trilogy&t=" + title + "&plot=short&tomatoes=true";
+  request (movieQueryUrl, function (error, response, body) {
+    if(!error && response.statusCode == 200) {
+      var body = JSON.parse(body);
+      console.log(demDashes)
+      console.log("Title: " + body.Title)
+      console.log("Release Year: " + body.Year);
+      console.log("IMdB Rating: " + body.imdbRating);
+      console.log("Rotten Tomatoes Rating: " + body.tomatoRating);
+      console.log("Country: " + body.Country);
+      console.log("Language: " + body.Language);
+      console.log("Plot: " + body.Plot);
+      console.log("Actors: " + body.Actors);
+      console.log(demDashes)
+      fs.appendFile('log.txt', demDashes + "\n", (err) => {
+        if (err) throw err;
+      });
+      fs.appendFile("log.txt", "Title: " + body.Title + "\n", (err) => {
+        if (err) throw err;
+      });
+      fs.appendFile("log.txt", "Release Year: " + body.Year + "\n", (err) => {
+        if (err) throw err;
+      });
+      fs.appendFile("log.txt", "IMdB Rating: " + body.imdbRating + "\n", (err) => {
+        if (err) throw err;
+      });
+      fs.appendFile("log.txt", "Rotten Tomatoes Rating: " + body.tomatoRating + "\n", (err) => {
+        if (err) throw err;
+      });
+      fs.appendFile("log.txt", "Country: " + body.Country + "\n", (err) => {
+        if (err) throw err;
+      });
+      fs.appendFile("log.txt", "Language: " + body.Language + "\n", (err) => {
+        if (err) throw err;
+      });
+      fs.appendFile("log.txt", "Plot: " + body.Plot + "\n", (err) => {
+        if (err) throw err;
+      });
+      fs.appendFile("log.txt", "Actors: " + body.Actors + "\n", (err) => {
+        if (err) throw err;
+      });
+      fs.appendFile("log.txt", demDashes + "\n", (err) => {
+        if (err) throw err;
+      });
+    } else {
+      console.log("OMDB Error Occurred")
+    }
+    if (title === "Mr. Nobody") {
+      console.log("If you haven't watched 'Mr. Nobody,' then you should: http://www.imdb.com/title/tt0485947/");
+      console.log("It's on Netflix!");
+      console.log(demDashes)
+    }
+  })
+}
+
+function doIttt(){
+  fs.readFile('random.txt', "utf8", function(error, data){
+    var txt = data.split(',');
+    tunesMan(txt[1]);
+  });
+}
